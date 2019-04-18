@@ -148,7 +148,7 @@ MainActivity extends AppCompatActivity {
     //Remember to delete division on the countDown parameter
     //Button changes to start one second late
     private void startCountDownTimer(final long timeSelected) {
-        countDownTimer = new CountDownTimer(timeSelected / 10, 1000) {
+        countDownTimer = new CountDownTimer(timeSelected, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 setUpTimeDisplayer(millisUntilFinished);

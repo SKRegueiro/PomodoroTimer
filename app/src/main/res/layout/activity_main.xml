@@ -84,8 +84,8 @@
 
     <ImageView
         android:id="@+id/playButton"
-        android:layout_width="65dp"
-        android:layout_height="66dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_marginStart="60dp"
         android:layout_marginLeft="60dp"
         android:layout_marginTop="8dp"
@@ -101,10 +101,8 @@
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="65dp"
-        android:layout_height="66dp"
-        android:layout_marginStart="161dp"
-        android:layout_marginLeft="161dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="60dp"
         android:layout_marginRight="60dp"
@@ -113,7 +111,6 @@
         android:onClick="resetCountDown"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/playButton"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.922"
         app:srcCompat="@drawable/ic_stop_circle" />
