@@ -14,8 +14,7 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class
-MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
     TextView clock;
     TextView orderDisplayer;
     TextView sessionCounter;
@@ -30,7 +29,7 @@ MainActivity extends AppCompatActivity {
     int longBreakTime;
     int workSessionsBeforeLongBreak;
     int completedSessions = 0;
-    long millisecondsLeftWhenPaused;
+    long millisecondsRemaining;
     String session;
     Status status;
     ImageView playButton;
@@ -48,13 +47,14 @@ MainActivity extends AppCompatActivity {
         playButton = findViewById(R.id.playButton);
         sessionPreferences = new SessionPreferences();
         sharedPreferences = this.getSharedPreferences("com.example.pomodorotimer", Context.MODE_PRIVATE);
+
         session = "work";
         workSessionsBeforeLongBreak = 4;
         status = new Status();
 
         getSavedTimePreferences();
         setTimePreferences();
-        setUpTimeDisplayer(sessionPreferences.workTime);
+        displayTime(sessionPreferences.workTime);
     }
 
     public void manageCountDown(View view) {
@@ -82,7 +82,7 @@ MainActivity extends AppCompatActivity {
                 break;
             case "break":
                 startBreak();
-                displayCompletedSessions();
+                //displayCompletedSessions();
                 break;
             case "longBreak":
                 startLongBreak();
@@ -92,7 +92,7 @@ MainActivity extends AppCompatActivity {
 
     private void startWork() {
         startCountDownTimer(sessionPreferences.workTime);
-        orderDisplayer.setText("Work");
+        orderDisplayer.setText("WORK");
     }
 
     private void startBreak() {
@@ -101,16 +101,16 @@ MainActivity extends AppCompatActivity {
 
     private void startLongBreak() {
         startCountDownTimer(sessionPreferences.longBreakTime);
-        orderDisplayer.setText("Long break");
-        session = "work";
     }
 
     //Need to simplify completedSessions Array
+    //something wrong with this, with clockFormatter prob
     private void displayCompletedSessions() {
         clockFormatter = new ClockFormatter(completedSessions);
         sessionCounter.setText(clockFormatter.completedSessions);
     }
 
+    //Isn't this redundant?
     private void setStatusToPaused() {
         status.pause();
     }
@@ -130,30 +130,39 @@ MainActivity extends AppCompatActivity {
 
     private void resumeCountDown() {
         setStatusToPlaying();
-        startCountDownTimer(millisecondsLeftWhenPaused);
+        startCountDownTimer(millisecondsRemaining);
     }
 
-    public void resetCountDown(View view) {
+    public void stopCountDown(View view) {
+        resetCountDown();
+    }
+
+    public void resetCountDown() {
         resetClock();
         setStatusToStoped();
+        completedSessions = 0;
+        displayCompletedSessions();
         progressBar.setVisibility(View.INVISIBLE);
         playButton.setImageResource(R.drawable.ic_play_circle_filled);
+        orderDisplayer.setText("WORK");
+        session = "work";
+
     }
 
     private void resetClock() {
         countDownTimer.cancel();
-        setUpTimeDisplayer(sessionPreferences.workTime);
+        displayTime(sessionPreferences.workTime);
     }
 
     //Remember to delete division on the countDown parameter
     //Button changes to start one second late
     private void startCountDownTimer(final long timeSelected) {
-        countDownTimer = new CountDownTimer(timeSelected, 1000) {
+        countDownTimer = new CountDownTimer(timeSelected / 10, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                setUpTimeDisplayer(millisUntilFinished);
+                displayTime(millisUntilFinished);
                 setUpProgressBar(millisUntilFinished - 1000);
-                millisecondsLeftWhenPaused = millisUntilFinished;
+                millisecondsRemaining = millisUntilFinished;
             }
 
             @Override
@@ -164,28 +173,37 @@ MainActivity extends AppCompatActivity {
     }
 
     private void finishTaggedSession() {
-        if (session.equals("work")) {
-            orderDisplayer.setText("break");
-            setUpTimeDisplayer(sessionPreferences.breakTime);
-            completedSessions++;
-            setStatusToStoped();
-            session = "break";
-        } else if (session.equals("break")) {
-            orderDisplayer.setText("work");
-            setUpTimeDisplayer(sessionPreferences.breakTime);
-            setStatusToStoped();
-            if (completedSessions == sessionPreferences.workSessionsBeforeLongBreak) {
-                session = "longBreak";
-            } else {
+        switch (session) {
+            case "work":
+                displayTime(sessionPreferences.breakTime);
+                completedSessions++;
+                displayCompletedSessions();
+                setStatusToStoped();
+                if (completedSessions == sessionPreferences.workSessionsBeforeLongBreak) {
+                    session = "longBreak";
+                    orderDisplayer.setText("LONGBREAK");
+                } else {
+                    session = "break";
+                    orderDisplayer.setText("BREAK");
+                }
+
+                break;
+            case "break":
+                orderDisplayer.setText("WORK");
                 session = "work";
-            }
-        } else if (session.equals("longBreak")) {
-            completedSessions = 0;
+                displayTime(sessionPreferences.breakTime);
+                setStatusToStoped();
+                break;
+            case "longBreak":
+                setStatusToPaused();
+                completedSessions = 0;
+                resetCountDown();
+                break;
         }
         playButton.setImageResource(R.drawable.ic_play_circle_filled);
     }
 
-    private void setUpTimeDisplayer(long milliseconds) {
+    private void displayTime(long milliseconds) {
         String timeToDisplay = getFormattedTime(milliseconds);
         clock.setText(timeToDisplay);
     }

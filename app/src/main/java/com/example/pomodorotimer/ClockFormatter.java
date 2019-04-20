@@ -1,8 +1,5 @@
 package com.example.pomodorotimer;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-
 public class ClockFormatter {
 
     private int secondsLeft;
@@ -27,14 +24,14 @@ public class ClockFormatter {
         this.time = minutesString + ":" + secondsString;
     }
 
-    public ClockFormatter(int completedSessions){
+    public ClockFormatter(int completedSessions) {
         formatSessionCounter(completedSessions);
     }
 
-    private void formatSessionCounter(int sessionFinished){
+    private void formatSessionCounter(int sessionFinished) {
         this.completedSessions = "";
         for (int i = 0; i < sessionFinished; i++) {
-            this.completedSessions = "I ";
+            this.completedSessions += "I ";
         }
     }
 
