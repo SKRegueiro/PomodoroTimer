@@ -1,0 +1,11 @@
+ - Clean the code
+
+ - Probably would be cleaner to use an array to control the session. The size would be the number
+ of sessionsBeforeLongBreak. Each session adds a new value to the array, which leads it to the next
+ session (either work or break). When the array reaches a number of values equal to its size minus 1
+ the longBreak sessions is called.
+ Another possibility could be using a boolean (or just an int with two values) and an int counting
+ the number of completed sessions. Instead of a switch or a if/else distribution the system will
+ selected either work or break depending on this two values, and will start the longbreak when the
+ int counting the values reaches the number of sessionsBeforeLongBreak x2 -1;
+
