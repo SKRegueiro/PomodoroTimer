@@ -7,9 +7,9 @@
     <string name="select_your_work_time">Select your work time</string>
     <string name="set_time">set time</string>
     <string name="set_work_time">set work time</string>
-    <string name="work">Work:</string>
-    <string name="breakSettings">Break:</string>
-    <string name="long_break">Long break:</string>
+    <string name="work">Work minutes:</string>
+    <string name="breakSettings">Break minutes:</string>
+    <string name="long_break">Long break minutes:</string>
     <string name="adjust_session_times">ADJUST SESSION TIMES</string>
     <string name="set_session">set session</string>
     <string name="sessions_before_long_long_break">Sessions before long long break:</string>

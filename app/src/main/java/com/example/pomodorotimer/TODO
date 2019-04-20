@@ -1,4 +1,19 @@
- - Clean the code
+ - Add notifications and alarm sounds.
+
+ - Clean the code.
+
+ - Stop button before the timer has ever been played crashes the app
+
+ -Save changes button in Settings activity should trigger a alert popup to confirm that they want to
+ save the new preferences even tho it will reset the pomodoro timer.
+
+ - Reset on long break to fast. Probably better to let the user know that he finished the longBreak.
+
+ - Put another circle under the main progressbar with a clearer color.
+
+ - Make the stop square bigger
+
+ - Saving a SessionPreferences object in SharedPreferences instead of the 4 preferences individually.
 
  - Probably would be cleaner to use an array to control the session. The size would be the number
  of sessionsBeforeLongBreak. Each session adds a new value to the array, which leads it to the next
@@ -7,5 +22,4 @@
  Another possibility could be using a boolean (or just an int with two values) and an int counting
  the number of completed sessions. Instead of a switch or a if/else distribution the system will
  selected either work or break depending on this two values, and will start the longbreak when the
- int counting the values reaches the number of sessionsBeforeLongBreak x2 -1;
-
+ int counting the values reaches the number of sessionsBeforeLongBreak x2 -1.
