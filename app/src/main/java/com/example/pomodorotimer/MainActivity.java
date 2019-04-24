@@ -1,11 +1,22 @@
 package com.example.pomodorotimer;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.CountDownTimer;
-import android.support.v7.app.AppCompatActivity;
+import android.graphics.Color;
+import android.media.AudioAttributes;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,7 +25,10 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import static com.example.pomodorotimer.App.CHANNEL_1_ID;
+
 public class MainActivity extends AppCompatActivity {
+    private NotificationManagerCompat notificationManagerCompat;
     TextView clock;
     TextView orderDisplayer;
     TextView sessionCounter;
@@ -24,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     Intent settingsIntent;
     SharedPreferences sharedPreferences;
+
     int workTime;
     int breakTime;
     int longBreakTime;
@@ -47,14 +62,14 @@ public class MainActivity extends AppCompatActivity {
         playButton = findViewById(R.id.playButton);
         sessionPreferences = new SessionPreferences();
         sharedPreferences = this.getSharedPreferences("com.example.pomodorotimer", Context.MODE_PRIVATE);
-
         session = "work";
         workSessionsBeforeLongBreak = 4;
         status = new Status();
-
+        notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
         getSavedTimePreferences();
         setTimePreferences();
         displayTime(sessionPreferences.workTime);
+
     }
 
     public void manageCountDown(View view) {
@@ -84,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 startBreak();
                 //displayCompletedSessions();
                 break;
-            case "longBreak":
+            case "long break":
                 startLongBreak();
                 break;
         }
@@ -157,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
     //Remember to delete division on the countDown parameter
     //Button changes to start one second late
     private void startCountDownTimer(final long timeSelected) {
-        countDownTimer = new CountDownTimer(timeSelected / 10, 1000) {
+        countDownTimer = new CountDownTimer(timeSelected, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 displayTime(millisUntilFinished);
@@ -173,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void finishTaggedSession() {
+        notifyEndOf(session);
         switch (session) {
             case "work":
                 displayTime(sessionPreferences.breakTime);
@@ -180,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 displayCompletedSessions();
                 setStatusToStoped();
                 if (completedSessions == sessionPreferences.workSessionsBeforeLongBreak) {
-                    session = "longBreak";
+                    session = "long break";
                     orderDisplayer.setText("LONGBREAK");
                 } else {
                     session = "break";
@@ -194,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
                 displayTime(sessionPreferences.breakTime);
                 setStatusToStoped();
                 break;
-            case "longBreak":
+            case "long break":
                 setStatusToPaused();
                 completedSessions = 0;
                 resetCountDown();
@@ -269,6 +285,20 @@ public class MainActivity extends AppCompatActivity {
         breakTime = sharedPreferences.getInt("newBreakMinutes", 5);
         longBreakTime = sharedPreferences.getInt("newLongBreakMinutes", 15);
         workSessionsBeforeLongBreak = sharedPreferences.getInt("newWorkSessionsBeforeLongBreak", 4);
+    }
+
+    public void notifyEndOf(String session) {
+        Uri notificationSound = Uri.parse("android.resource://com.example.pomodorotimer/" + R.raw.light);
+        Notification notification = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_1_ID)
+                .setSmallIcon(R.drawable.ic_alarm_on_black_24dp)
+                .setContentTitle("Time's up!")
+                .setContentText("Your " + session + " session has ended")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setSound(notificationSound)
+                .build();
+
+        notificationManagerCompat.notify(1, notification);
     }
 }
 

@@ -15,6 +15,11 @@
 
  - Saving a SessionPreferences object in SharedPreferences instead of the 4 preferences individually.
 
+ - Would be even better to just have one floating button, tap once to play, tap again to pause, and
+ hold to restart.
+
+ - Start of the progressBar should be on the top
+
  - Probably would be cleaner to use an array to control the session. The size would be the number
  of sessionsBeforeLongBreak. Each session adds a new value to the array, which leads it to the next
  session (either work or break). When the array reaches a number of values equal to its size minus 1

@@ -131,5 +131,26 @@
         app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/ic_more_vert" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="21dp"
+        android:layout_marginLeft="21dp"
+        android:layout_marginTop="19dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginRight="1dp"
+        android:layout_marginBottom="27dp"
+        android:clickable="true"
+        app:backgroundTint="#616161"
+        app:borderWidth="0.5dp"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/playButton"
+        app:layout_constraintTop_toBottomOf="@+id/timerDisplay"
+        app:layout_constraintVertical_bias="0.0" />
+
 
 </android.support.constraint.ConstraintLayout>

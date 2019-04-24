@@ -7,6 +7,7 @@
 
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:appComponentFactory="android.support.v4.app.CoreComponentFactory"
         android:debuggable="true"
