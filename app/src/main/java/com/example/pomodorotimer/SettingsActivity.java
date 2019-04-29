@@ -1,9 +1,12 @@
 package com.example.pomodorotimer;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -19,6 +22,9 @@ public class SettingsActivity extends AppCompatActivity {
     TextView workSessionBeforeLongBreakDisplayer;
     SharedPreferences sharedPreferences;
     SeekBar.OnSeekBarChangeListener listener;
+    AlertDialog.Builder dialogBuilder;
+    AlertDialog alertDialog;
+
     int newWorkMinutes;
     int newBreakMinutes;
     int newLongBreakMinutes;
@@ -46,6 +52,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         setManagersAtributes();
         displayCurrentPreferences();
+        createAlertDialog();
     }
 
     public void displayCurrentPreferences() {
@@ -105,8 +112,12 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public void saveNewPreferencesAndFinish(View view) {
+        alertDialog.show();
         getSelectedValues();
         saveSelectedValuesOnSharedPreferences();
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("change preferences", true);
+        setResult(MainActivity.RESULT_OK, returnIntent);
         finish();
     }
 
@@ -127,6 +138,20 @@ public class SettingsActivity extends AppCompatActivity {
         sharedPreferences.edit().putInt("newBreakMinutes", newBreakMinutes).apply();
         sharedPreferences.edit().putInt("newLongBreakMinutes", newLongBreakMinutes).apply();
         sharedPreferences.edit().putInt("newWorkSessionsBeforeLongBreak", newWorkSessionsBeforeLongBreak).apply();
+    }
+
+    private void createAlertDialog() {
+        dialogBuilder = new AlertDialog.Builder(getApplicationContext());
+        dialogBuilder.setTitle("Are you sure?");
+        dialogBuilder.setMessage("This will restart your session");
+        dialogBuilder.setPositiveButton("Yes",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+
+        alertDialog = dialogBuilder.create();
     }
 
     private void setManagersAtributes() {

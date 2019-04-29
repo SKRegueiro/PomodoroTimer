@@ -1,26 +1,24 @@
 package com.example.pomodorotimer;
 
+import android.app.Activity;
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.media.AudioAttributes;
+import android.graphics.drawable.AnimatedVectorDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,6 +26,8 @@ import android.widget.TextView;
 import static com.example.pomodorotimer.App.CHANNEL_1_ID;
 
 public class MainActivity extends AppCompatActivity {
+    final Handler handler = new Handler();
+
     private NotificationManagerCompat notificationManagerCompat;
     TextView clock;
     TextView orderDisplayer;
@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     Intent settingsIntent;
     SharedPreferences sharedPreferences;
+    FloatingActionButton floatingButton;
 
     int workTime;
     int breakTime;
@@ -47,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
     long millisecondsRemaining;
     String session;
     Status status;
-    ImageView playButton;
 
 
     @Override
@@ -55,11 +55,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        floatingButton = findViewById(R.id.floatingActionButton);
         clock = findViewById(R.id.timerDisplay);
         progressBar = findViewById(R.id.progressBar);
         orderDisplayer = findViewById(R.id.orderDisplayer);
         sessionCounter = findViewById(R.id.sessionCounter);
-        playButton = findViewById(R.id.playButton);
         sessionPreferences = new SessionPreferences();
         sharedPreferences = this.getSharedPreferences("com.example.pomodorotimer", Context.MODE_PRIVATE);
         session = "work";
@@ -69,20 +69,32 @@ public class MainActivity extends AppCompatActivity {
         getSavedTimePreferences();
         setTimePreferences();
         displayTime(sessionPreferences.workTime);
-
+        setStopLongClickListener();
     }
 
     public void manageCountDown(View view) {
         if (status.isStopped()) {
             selectAndStartSession();
-            playButton.setImageResource(R.drawable.ic_pause_circle_filled);
+            startPlayToPauseAnimation();
         } else if (status.isPlaying()) {
             pauseCountDown();
-            playButton.setImageResource(R.drawable.ic_play_circle_filled);
+            startPauseToPlayAnimation();
         } else if (status.isPaused()) {
             resumeCountDown();
-            playButton.setImageResource(R.drawable.ic_pause_circle_filled);
+            startPlayToPauseAnimation();
         }
+    }
+
+    private void startPlayToPauseAnimation() {
+        floatingButton.setImageResource(R.drawable.play_to_pause);
+        AnimatedVectorDrawable animation = (AnimatedVectorDrawable) floatingButton.getDrawable();
+        animation.start();
+    }
+
+    private void startPauseToPlayAnimation() {
+        floatingButton.setImageResource(R.drawable.pause_to_play);
+        AnimatedVectorDrawable animation = (AnimatedVectorDrawable) floatingButton.getDrawable();
+        animation.start();
     }
 
     private void selectAndStartSession() {
@@ -97,12 +109,28 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "break":
                 startBreak();
-                //displayCompletedSessions();
                 break;
             case "long break":
                 startLongBreak();
                 break;
         }
+    }
+
+    private void setStopLongClickListener() {
+        floatingButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                resetCountDown();
+                floatingButton.setImageResource(R.drawable.ic_stop_black_24dp);
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        floatingButton.setImageResource(R.drawable.ic_play_arrow);
+                    }
+                }, 500);
+                return true;
+            }
+        });
     }
 
     private void startWork() {
@@ -118,14 +146,11 @@ public class MainActivity extends AppCompatActivity {
         startCountDownTimer(sessionPreferences.longBreakTime);
     }
 
-    //Need to simplify completedSessions Array
-    //something wrong with this, with clockFormatter prob
     private void displayCompletedSessions() {
         clockFormatter = new ClockFormatter(completedSessions);
         sessionCounter.setText(clockFormatter.completedSessions);
     }
 
-    //Isn't this redundant?
     private void setStatusToPaused() {
         status.pause();
     }
@@ -148,20 +173,15 @@ public class MainActivity extends AppCompatActivity {
         startCountDownTimer(millisecondsRemaining);
     }
 
-    public void stopCountDown(View view) {
-        resetCountDown();
-    }
-
     public void resetCountDown() {
-        resetClock();
+        if (countDownTimer != null) {
+            resetClock();
+        }
         setStatusToStoped();
         completedSessions = 0;
         displayCompletedSessions();
-        progressBar.setVisibility(View.INVISIBLE);
-        playButton.setImageResource(R.drawable.ic_play_circle_filled);
         orderDisplayer.setText("WORK");
         session = "work";
-
     }
 
     private void resetClock() {
@@ -169,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
         displayTime(sessionPreferences.workTime);
     }
 
-    //Remember to delete division on the countDown parameter
     //Button changes to start one second late
     private void startCountDownTimer(final long timeSelected) {
         countDownTimer = new CountDownTimer(timeSelected, 1000) {
@@ -202,21 +221,22 @@ public class MainActivity extends AppCompatActivity {
                     session = "break";
                     orderDisplayer.setText("BREAK");
                 }
-
                 break;
+
             case "break":
                 orderDisplayer.setText("WORK");
                 session = "work";
-                displayTime(sessionPreferences.breakTime);
+                displayTime(sessionPreferences.workTime);
                 setStatusToStoped();
                 break;
+
             case "long break":
                 setStatusToPaused();
                 completedSessions = 0;
                 resetCountDown();
                 break;
         }
-        playButton.setImageResource(R.drawable.ic_play_circle_filled);
+        startPauseToPlayAnimation();
     }
 
     private void displayTime(long milliseconds) {
@@ -231,12 +251,27 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUpProgressBar(long milliseconds) {
         int progress = (int) milliseconds;
-        int max = (int) sessionPreferences.workTime;
+        int max = (int) sessionPreferences.;
 
         progressBar.setVisibility(View.VISIBLE);
         progressBar.setMax(max);
         progressBar.setProgress(progress);
     }
+
+
+    /*private void refillProgressBar() {
+
+        progressBar.setMax(100);
+        for (int i = 0; i < progressBar.getMax() ; i++) {
+            progressBar.setProgress(i);
+            try {
+                Thread.sleep(100);
+            }catch (Exception e){
+
+            }
+
+        }
+    }*/
 
     public void showPopup(View v) {
         PopupMenu popup = new PopupMenu(this, v);
@@ -253,7 +288,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
@@ -263,21 +297,18 @@ public class MainActivity extends AppCompatActivity {
 
     public void openSettingsActivity() {
         settingsIntent = new Intent(getApplicationContext(), SettingsActivity.class);
-        startActivity(settingsIntent);
+        startActivityForResult(settingsIntent, 1);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        getSavedTimePreferences();
-        setTimePreferences();
-    }
-
-    public void setTimePreferences() {
-        sessionPreferences.setWorkTime(workTime);
-        sessionPreferences.setBreakTime(breakTime);
-        sessionPreferences.setLongBreakTime(longBreakTime);
-        sessionPreferences.setWorkSessionsBeforeLongBreak(workSessionsBeforeLongBreak);
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                getSavedTimePreferences();
+                setTimePreferences();
+                resetCountDown();
+            }
+        }
     }
 
     public void getSavedTimePreferences() {
@@ -287,7 +318,19 @@ public class MainActivity extends AppCompatActivity {
         workSessionsBeforeLongBreak = sharedPreferences.getInt("newWorkSessionsBeforeLongBreak", 4);
     }
 
+    public void setTimePreferences() {
+        sessionPreferences.setWorkTime(workTime);
+        sessionPreferences.setBreakTime(breakTime);
+        sessionPreferences.setLongBreakTime(longBreakTime);
+        sessionPreferences.setWorkSessionsBeforeLongBreak(workSessionsBeforeLongBreak);
+    }
+
     public void notifyEndOf(String session) {
+        Intent resultIntent = getIntent();
+        resultIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        resultIntent.setAction(Intent.ACTION_MAIN);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
+                resultIntent, 0);
         Uri notificationSound = Uri.parse("android.resource://com.example.pomodorotimer/" + R.raw.light);
         Notification notification = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_1_ID)
                 .setSmallIcon(R.drawable.ic_alarm_on_black_24dp)
@@ -296,7 +339,10 @@ public class MainActivity extends AppCompatActivity {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setSound(notificationSound)
+                //Starts new activity instead of
+                .setContentIntent(pendingIntent)
                 .build();
+        notification.sound = Uri.parse("android.resource://com.example.pomodorotimer/" + R.raw.light);
 
         notificationManagerCompat.notify(1, notification);
     }

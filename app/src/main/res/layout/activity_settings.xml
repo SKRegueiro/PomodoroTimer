@@ -8,6 +8,8 @@
 
     <SeekBar
         android:id="@+id/workManager"
+        android:progressTint="@color/colorPrimary"
+        android:thumbTint="@color/colorPrimary"
         android:layout_width="312dp"
         android:layout_height="22dp"
         android:layout_marginStart="50dp"
@@ -20,6 +22,8 @@
         app:layout_constraintTop_toBottomOf="@+id/workMInutesDisplayer" />
 
     <SeekBar
+        android:progressTint="@color/colorPrimary"
+        android:thumbTint="@color/colorPrimary"
         android:id="@+id/breakManager"
         android:layout_width="312dp"
         android:layout_height="wrap_content"
@@ -33,6 +37,8 @@
         app:layout_constraintTop_toBottomOf="@+id/breakTimeDisplayer" />
 
     <SeekBar
+        android:progressTint="@color/colorPrimary"
+        android:thumbTint="@color/colorPrimary"
         android:id="@+id/longBreakManager"
         android:layout_width="312dp"
         android:layout_height="wrap_content"
@@ -46,6 +52,8 @@
         app:layout_constraintTop_toBottomOf="@+id/longBreakTimeDisplayer" />
 
     <SeekBar
+        android:progressTint="@color/colorPrimary"
+        android:thumbTint="@color/colorPrimary"
         android:id="@+id/workSessionsBeforeLongBreakManager"
         android:layout_width="312dp"
         android:layout_height="wrap_content"
@@ -186,6 +194,8 @@
 
     <Button
         android:id="@+id/button"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="#ffff"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:layout_marginStart="151dp"

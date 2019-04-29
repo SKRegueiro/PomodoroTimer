@@ -25,17 +25,18 @@ public class App extends Application {
                     NotificationManager.IMPORTANCE_HIGH);
             channel1.setDescription("Notifies when the current session ended");
             channel1.setLightColor(Color.WHITE);
-            Uri notificationSound = Uri.parse("android.resource://com.example.notificationemo/" + R.raw.light);
+            Uri notificationSound= Uri.parse("android.resource://"
+                    + getApplicationContext().getPackageName() + "/" + R.raw.light);
+
             AudioAttributes att = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build();
             channel1.setSound(notificationSound, att);
 
 
         NotificationManager manager = getSystemService(NotificationManager.class);
         manager.createNotificationChannel(channel1);
-
         }
     }
 }

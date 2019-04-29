@@ -1,30 +1,39 @@
- - Add notifications and alarm sounds.
+ -  Add alarm sounds.
 
- - Clean the code.
+ -  Add intent to notification and delete notification after app is opened.
 
- - Stop button before the timer has ever been played crashes the app
+ - Status should also include which session is playing.
 
- -Save changes button in Settings activity should trigger a alert popup to confirm that they want to
- save the new preferences even tho it will reset the pomodoro timer.
+ -  Refill the progress bar when the countdown is stopped.
 
- - Reset on long break to fast. Probably better to let the user know that he finished the longBreak.
+ -  Saving changes without playing the app even once crashes the app.
 
- - Put another circle under the main progressbar with a clearer color.
+ -  Clean the code.
 
- - Make the stop square bigger
+ -  Save changes button in Settings activity should trigger a alert popup to confirm that they want to
+    save the new preferences even tho it will reset the pomodoro timer.
 
- - Saving a SessionPreferences object in SharedPreferences instead of the 4 preferences individually.
+ -  Saving changes should update the time displayed in the clock.
 
- - Would be even better to just have one floating button, tap once to play, tap again to pause, and
- hold to restart.
+ -  Probably better to send a custom notification when the whole session has ended.
 
- - Start of the progressBar should be on the top
+ -  Put two session counters, the first one displays in a clear color all the sessions before a long play.
+    The second one adds one dark mark over the the other displayer every time a work sessions is completed.
 
- - Probably would be cleaner to use an array to control the session. The size would be the number
- of sessionsBeforeLongBreak. Each session adds a new value to the array, which leads it to the next
- session (either work or break). When the array reaches a number of values equal to its size minus 1
- the longBreak sessions is called.
- Another possibility could be using a boolean (or just an int with two values) and an int counting
- the number of completed sessions. Instead of a switch or a if/else distribution the system will
- selected either work or break depending on this two values, and will start the longbreak when the
- int counting the values reaches the number of sessionsBeforeLongBreak x2 -1.
+ -  Saving a SessionPreferences object in SharedPreferences instead of the 4 preferences individually.
+
+  -  Probably would be cleaner to use an array to control the session. The size would be the number
+    of sessionsBeforeLongBreak. Each session adds a new value to the array, which leads it to the next
+    session (either work or break). When the array reaches a number of values equal to its size minus 1
+    the longBreak sessions is called.
+    Another possibility could be using a boolean (or just an int with two values) and an int counting
+    the number of completed sessions. Instead of a switch or a if/else distribution the system will
+    selected either work or break depending on this two values, and will start the longbreak when the
+    int counting the values reaches the number of sessionsBeforeLongBreak x2 -1.
+
+
+
+ X  Start of the progressBar should be on the top
+
+ X  Would be even better to just have one floating button, tap once to play, tap again to pause, and
+     hold to restart.

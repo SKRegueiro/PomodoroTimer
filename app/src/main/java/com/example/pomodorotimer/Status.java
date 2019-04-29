@@ -4,6 +4,10 @@ public class Status {
     private boolean playing;
     private boolean paused;
     private boolean stopped;
+    private boolean work;
+    private boolean shortBreak;
+    private boolean longBreak;
+
 
 
     public Status() {
@@ -39,4 +43,5 @@ public class Status {
     public boolean isStopped() {
         return stopped;
     }
+
 }
