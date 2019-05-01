@@ -1,17 +1,32 @@
 package com.example.pomodorotimer;
 
+import java.lang.reflect.Array;
+
 public class Status {
     private boolean playing;
     private boolean paused;
     private boolean stopped;
-    private boolean work;
-    private boolean shortBreak;
-    private boolean longBreak;
-
-
+    private String session;
 
     public Status() {
         stop();
+        this.session = "work";
+    }
+
+    public String getCurrentSession(){
+        return session;
+    }
+
+    public void setToWork(){
+        this.session = "work";
+    }
+
+    public void setToBreak(){
+        this.session = "break";
+    }
+
+    public void setToLongBreak(){
+        this.session = "long break";
     }
 
     public void play() {

@@ -31,7 +31,7 @@ public class ClockFormatter {
     private void formatSessionCounter(int sessionFinished) {
         this.completedSessions = "";
         for (int i = 0; i < sessionFinished; i++) {
-            this.completedSessions += "I ";
+            this.completedSessions += " I ";
         }
     }
 

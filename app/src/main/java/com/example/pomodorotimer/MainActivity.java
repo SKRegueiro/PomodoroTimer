@@ -1,5 +1,6 @@
 package com.example.pomodorotimer;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -29,25 +30,25 @@ public class MainActivity extends AppCompatActivity {
     final Handler handler = new Handler();
 
     private NotificationManagerCompat notificationManagerCompat;
-    TextView clock;
-    TextView orderDisplayer;
-    TextView sessionCounter;
-    CountDownTimer countDownTimer;
-    ClockFormatter clockFormatter;
-    SessionPreferences sessionPreferences;
-    ProgressBar progressBar;
-    Intent settingsIntent;
-    SharedPreferences sharedPreferences;
-    FloatingActionButton floatingButton;
+    private TextView clock;
+    private TextView orderDisplayer;
+    private TextView sessionCounter;
+    private CountDownTimer countDownTimer;
+    private ClockFormatter clockFormatter;
+    private SessionPreferences sessionPreferences;
+    private ProgressBar progressBar;
+    private Intent settingsIntent;
+    private SharedPreferences sharedPreferences;
+    private FloatingActionButton floatingButton;
 
-    int workTime;
-    int breakTime;
-    int longBreakTime;
-    int workSessionsBeforeLongBreak;
-    int completedSessions = 0;
-    long millisecondsRemaining;
-    String session;
-    Status status;
+    private int workTime;
+    private int breakTime;
+    private int longBreakTime;
+    private int workSessionsBeforeLongBreak;
+    private int completedSessions = 0;
+    private long millisecondsRemaining;
+    private String session;
+    private Status status;
 
 
     @Override
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void manageCountDown(View view) {
         if (status.isStopped()) {
-            selectAndStartSession();
+            startSelectedSession();
             startPlayToPauseAnimation();
         } else if (status.isPlaying()) {
             pauseCountDown();
@@ -97,12 +98,13 @@ public class MainActivity extends AppCompatActivity {
         animation.start();
     }
 
-    private void selectAndStartSession() {
+    private void startSelectedSession() {
         setStatusToPlaying();
         startTaggedSession();
     }
 
     private void startTaggedSession() {
+        orderDisplayer.setVisibility(View.VISIBLE);
         switch (session) {
             case "work":
                 startWork();
@@ -180,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
         setStatusToStoped();
         completedSessions = 0;
         displayCompletedSessions();
+        orderDisplayer.setVisibility(View.INVISIBLE);
         orderDisplayer.setText("WORK");
         session = "work";
     }
@@ -187,9 +190,23 @@ public class MainActivity extends AppCompatActivity {
     private void resetClock() {
         countDownTimer.cancel();
         displayTime(sessionPreferences.workTime);
+        refillProgress();
+        floatingButton.setImageResource(R.drawable.ic_play_arrow);
     }
 
-    //Button changes to start one second late
+    private void refillProgress(){
+        int startingValue = progressBar.getProgress();
+        ValueAnimator animator = ValueAnimator.ofInt(startingValue, progressBar.getMax());
+        animator.setDuration(1000);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation){
+                progressBar.setProgress((Integer)animation.getAnimatedValue());
+            }
+        });
+        animator.start();
+    }
+
     private void startCountDownTimer(final long timeSelected) {
         countDownTimer = new CountDownTimer(timeSelected, 1000) {
             @Override
@@ -208,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void finishTaggedSession() {
         notifyEndOf(session);
+        refillProgress();
         switch (session) {
             case "work":
                 displayTime(sessionPreferences.breakTime);
@@ -250,12 +268,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpProgressBar(long milliseconds) {
-        int progress = (int) milliseconds;
-        int max = (int) sessionPreferences.;
+       int max = 0;
+        switch (session){
+            case "work":
+                max = (int) sessionPreferences.workTime;
+                break;
+            case "break":
+                max = (int) sessionPreferences.breakTime;
+                break;
+            case "long break":
+                max = (int) sessionPreferences.longBreakTime;
+                break;
+        }
 
+        int progress = (int) milliseconds;
         progressBar.setVisibility(View.VISIBLE);
         progressBar.setMax(max);
         progressBar.setProgress(progress);
+
     }
 
 
@@ -297,7 +327,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void openSettingsActivity() {
         settingsIntent = new Intent(getApplicationContext(), SettingsActivity.class);
-        startActivityForResult(settingsIntent, 1);
+        startActivityForResult(settingsIntent,1);
     }
 
     @Override
@@ -339,11 +369,9 @@ public class MainActivity extends AppCompatActivity {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setSound(notificationSound)
-                //Starts new activity instead of
                 .setContentIntent(pendingIntent)
                 .build();
         notification.sound = Uri.parse("android.resource://com.example.pomodorotimer/" + R.raw.light);
-
         notificationManagerCompat.notify(1, notification);
     }
 }

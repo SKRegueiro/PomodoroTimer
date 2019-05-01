@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -111,8 +112,11 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    public void saveNewPreferencesAndFinish(View view) {
+    public void showAlertDialog(View view) {
         alertDialog.show();
+    }
+
+    public void saveNewPreferencesAndFinish() {
         getSelectedValues();
         saveSelectedValuesOnSharedPreferences();
         Intent returnIntent = new Intent();
@@ -141,15 +145,16 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void createAlertDialog() {
-        dialogBuilder = new AlertDialog.Builder(getApplicationContext());
+        dialogBuilder = new AlertDialog.Builder(SettingsActivity.this);
         dialogBuilder.setTitle("Are you sure?");
         dialogBuilder.setMessage("This will restart your session");
-        dialogBuilder.setPositiveButton("Yes",
+        dialogBuilder.setPositiveButton(Html.fromHtml("<font color='#494949'>YES</font>"),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-
+                        saveNewPreferencesAndFinish();
                     }
                 });
+
 
         alertDialog = dialogBuilder.create();
     }

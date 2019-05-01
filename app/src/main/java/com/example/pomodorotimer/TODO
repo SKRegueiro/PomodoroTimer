@@ -1,19 +1,10 @@
- -  Add alarm sounds.
-
  -  Add intent to notification and delete notification after app is opened.
 
- - Status should also include which session is playing.
-
- -  Refill the progress bar when the countdown is stopped.
-
- -  Saving changes without playing the app even once crashes the app.
+ -  Status should also include which session is playing.
 
  -  Clean the code.
 
- -  Save changes button in Settings activity should trigger a alert popup to confirm that they want to
-    save the new preferences even tho it will reset the pomodoro timer.
-
- -  Saving changes should update the time displayed in the clock.
+ -  Fix progress max bug: the max is changed every time the countdown is resumed.
 
  -  Probably better to send a custom notification when the whole session has ended.
 
@@ -22,7 +13,7 @@
 
  -  Saving a SessionPreferences object in SharedPreferences instead of the 4 preferences individually.
 
-  -  Probably would be cleaner to use an array to control the session. The size would be the number
+ -  Probably would be cleaner to use an array to control the session. The size would be the number
     of sessionsBeforeLongBreak. Each session adds a new value to the array, which leads it to the next
     session (either work or break). When the array reaches a number of values equal to its size minus 1
     the longBreak sessions is called.
@@ -31,7 +22,18 @@
     selected either work or break depending on this two values, and will start the longbreak when the
     int counting the values reaches the number of sessionsBeforeLongBreak x2 -1.
 
+ X  Saving changes without playing the app even once crashes the app.
 
+ X  Refill the progress bar when the countdown is stopped.
+
+ X  Restarting the countdown doesn't restart the progressBar progress.
+
+ X  Saving changes should update the time displayed in the clock.
+
+ X  Save changes button in Settings activity should trigger a alert popup to confirm that they want to
+    save the new preferences even tho it will reset the pomodoro timer.
+
+ X  Add alarm sounds
 
  X  Start of the progressBar should be on the top
 
