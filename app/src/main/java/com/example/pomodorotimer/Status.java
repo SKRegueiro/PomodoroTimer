@@ -10,7 +10,7 @@ public class Status {
 
     public Status() {
         stop();
-        this.session = "work";
+        setToWork();
     }
 
     public String getCurrentSession(){
