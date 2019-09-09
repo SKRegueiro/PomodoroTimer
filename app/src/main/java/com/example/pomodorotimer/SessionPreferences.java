@@ -1,27 +1,27 @@
 package com.example.pomodorotimer;
 
 public class SessionPreferences {
-    long workTime;
-    long breakTime;
-    long longBreakTime;
+    long workMilliseconds;
+    long breakMilliseconds;
+    long longBreakMilliseconds;
     int workSessionsBeforeLongBreak;
 
     public SessionPreferences() {
     }
 
-    public void setWorkTime(int minutes) {
+    public void setWorkMilliseconds(int minutes) {
         long minutesSelected = (long) minutes;
-        this.workTime = minutesSelected * 60000;
+        this.workMilliseconds = minutesSelected * 60000;
     }
 
-    public void setBreakTime(int minutes) {
+    public void setBreakMilliseconds(int minutes) {
         long minutesSelected = (long) minutes;
-        this.breakTime = minutesSelected * 60000;
+        this.breakMilliseconds = minutesSelected * 60000;
     }
 
-    public void setLongBreakTime(int minutes) {
+    public void setLongBreakMilliseconds(int minutes) {
         long minutesSelected = (long) minutes;
-        this.longBreakTime = minutesSelected * 60000;
+        this.longBreakMilliseconds = minutesSelected * 60000;
     }
 
     public void setWorkSessionsBeforeLongBreak(int sessions) {

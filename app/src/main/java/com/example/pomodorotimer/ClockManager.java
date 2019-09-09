@@ -22,13 +22,13 @@ public class ClockManager {
     private void startClockSession() {
         status.play();
         switch (status.getCurrentSession()) {
-            case "work":
+            case "WORK":
                 startWork();
                 break;
-            case "break":
+            case "BREAK":
                 startBreak();
                 break;
-            case "long break":
+            case "LONG BREAK":
                 startLongBreak();
                 break;
         }
@@ -48,7 +48,7 @@ public class ClockManager {
     }
 
     private void resumeClock() {
-        status.isPlaying();
+        status.play();
         clock.resumeCountdown();
     }
 

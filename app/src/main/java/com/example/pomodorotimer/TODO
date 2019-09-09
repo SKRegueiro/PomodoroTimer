@@ -2,6 +2,10 @@
 
  -  Status should also include which session is playing.
 
+ -  In order to clean the code we could make a class, displayer, that gets all the interactive views
+    of the mainActivity, and that intercats directly with the clock.class, in order to keep the views
+    updated
+
  -  Clean the code.
 
  -  Fix progress max bug: the max is changed every time the countdown is resumed.

@@ -1,5 +1,6 @@
 package com.example.pomodorotimer;
 
+//Probably better to change the constructor for functions
 public class ClockFormatter {
 
     private int secondsLeft;

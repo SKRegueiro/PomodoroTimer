@@ -1,6 +1,5 @@
 package com.example.pomodorotimer;
 
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -10,7 +9,6 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -30,25 +28,24 @@ public class MainActivity extends AppCompatActivity {
     final Handler handler = new Handler();
 
     private NotificationManagerCompat notificationManagerCompat;
-    private TextView clock;
+    private TextView displayer;
     private TextView orderDisplayer;
     private TextView sessionCounter;
-    private CountDownTimer countDownTimer;
-    private ClockFormatter clockFormatter;
     private SessionPreferences sessionPreferences;
     private ProgressBar progressBar;
     private Intent settingsIntent;
     private SharedPreferences sharedPreferences;
     private FloatingActionButton floatingButton;
+    private Clock clock;
+    private ClockManager clockManager;
+    private ClockDisplayer clockDisplayer;
+    private Status status;
 
     private int workTime;
     private int breakTime;
     private int longBreakTime;
     private int workSessionsBeforeLongBreak;
-    private int completedSessions = 0;
-    private long millisecondsRemaining;
-    private String session;
-    private Status status;
+
 
 
     @Override
@@ -56,36 +53,37 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         floatingButton = findViewById(R.id.floatingActionButton);
-        clock = findViewById(R.id.timerDisplay);
+        displayer = findViewById(R.id.timerDisplay);
         progressBar = findViewById(R.id.progressBar);
         orderDisplayer = findViewById(R.id.orderDisplayer);
         sessionCounter = findViewById(R.id.sessionCounter);
         sessionPreferences = new SessionPreferences();
         sharedPreferences = this.getSharedPreferences("com.example.pomodorotimer", Context.MODE_PRIVATE);
-        session = "work";
         workSessionsBeforeLongBreak = 4;
         status = new Status();
         notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
         getSavedTimePreferences();
         setTimePreferences();
-        displayTime(sessionPreferences.workTime);
         setStopLongClickListener();
+        clockDisplayer = new ClockDisplayer();
+        clock = new Clock(sessionPreferences, clockDisplayer);
+        clock.setStatus(status);
+        setClockDisplayer();
+        clockManager = new ClockManager(status, clock);
     }
 
     public void manageCountDown(View view) {
-        if (status.isStopped()) {
-            startSelectedSession();
-            startPlayToPauseAnimation();
-        } else if (status.isPlaying()) {
-            pauseCountDown();
-            startPauseToPlayAnimation();
-        } else if (status.isPaused()) {
-            resumeCountDown();
-            startPlayToPauseAnimation();
-        }
-    }
+        clockManager.manageClock();
 
+        if (status.isPlaying()) {
+            startPlayToPauseAnimation();
+        } else {
+            startPauseToPlayAnimation();
+        }
+
+    }
     private void startPlayToPauseAnimation() {
         floatingButton.setImageResource(R.drawable.play_to_pause);
         AnimatedVectorDrawable animation = (AnimatedVectorDrawable) floatingButton.getDrawable();
@@ -98,31 +96,13 @@ public class MainActivity extends AppCompatActivity {
         animation.start();
     }
 
-    private void startSelectedSession() {
-        setStatusToPlaying();
-        startTaggedSession();
-    }
-
-    private void startTaggedSession() {
-        orderDisplayer.setVisibility(View.VISIBLE);
-        switch (session) {
-            case "work":
-                startWork();
-                break;
-            case "break":
-                startBreak();
-                break;
-            case "long break":
-                startLongBreak();
-                break;
-        }
-    }
-
     private void setStopLongClickListener() {
         floatingButton.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                resetCountDown();
+                //resetCountDown();
+                clockManager.stopClock();
+                clockDisplayer.refillProgress();
                 floatingButton.setImageResource(R.drawable.ic_stop_black_24dp);
                 handler.postDelayed(new Runnable() {
                     @Override
@@ -134,174 +114,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-    private void startWork() {
-        startCountDownTimer(sessionPreferences.workTime);
-        orderDisplayer.setText("WORK");
-    }
-
-    private void startBreak() {
-        startCountDownTimer(sessionPreferences.breakTime);
-    }
-
-    private void startLongBreak() {
-        startCountDownTimer(sessionPreferences.longBreakTime);
-    }
-
-    private void displayCompletedSessions() {
-        clockFormatter = new ClockFormatter(completedSessions);
-        sessionCounter.setText(clockFormatter.completedSessions);
-    }
-
-    private void setStatusToPaused() {
-        status.pause();
-    }
-
-    private void setStatusToPlaying() {
-        status.play();
-    }
-
-    private void setStatusToStoped() {
-        status.stop();
-    }
-
-    private void pauseCountDown() {
-        setStatusToPaused();
-        countDownTimer.cancel();
-    }
-
-    private void resumeCountDown() {
-        setStatusToPlaying();
-        startCountDownTimer(millisecondsRemaining);
-    }
-
-    public void resetCountDown() {
-        if (countDownTimer != null) {
-            resetClock();
-        }
-        setStatusToStoped();
-        completedSessions = 0;
-        displayCompletedSessions();
-        orderDisplayer.setVisibility(View.INVISIBLE);
-        orderDisplayer.setText("WORK");
-        session = "work";
-    }
-
-    private void resetClock() {
-        countDownTimer.cancel();
-        displayTime(sessionPreferences.workTime);
-        refillProgress();
-        floatingButton.setImageResource(R.drawable.ic_play_arrow);
-    }
-
-    private void refillProgress(){
-        int startingValue = progressBar.getProgress();
-        ValueAnimator animator = ValueAnimator.ofInt(startingValue, progressBar.getMax());
-        animator.setDuration(1000);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation){
-                progressBar.setProgress((Integer)animation.getAnimatedValue());
-            }
-        });
-        animator.start();
-    }
-
-    private void startCountDownTimer(final long timeSelected) {
-        countDownTimer = new CountDownTimer(timeSelected, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                displayTime(millisUntilFinished);
-                setUpProgressBar(millisUntilFinished - 1000);
-                millisecondsRemaining = millisUntilFinished;
-            }
-
-            @Override
-            public void onFinish() {
-                finishTaggedSession();
-            }
-        }.start();
-    }
-
-    private void finishTaggedSession() {
-        notifyEndOf(session);
-        refillProgress();
-        switch (session) {
-            case "work":
-                displayTime(sessionPreferences.breakTime);
-                completedSessions++;
-                displayCompletedSessions();
-                setStatusToStoped();
-                if (completedSessions == sessionPreferences.workSessionsBeforeLongBreak) {
-                    session = "long break";
-                    orderDisplayer.setText("LONGBREAK");
-                } else {
-                    session = "break";
-                    orderDisplayer.setText("BREAK");
-                }
-                break;
-
-            case "break":
-                orderDisplayer.setText("WORK");
-                session = "work";
-                displayTime(sessionPreferences.workTime);
-                setStatusToStoped();
-                break;
-
-            case "long break":
-                setStatusToPaused();
-                completedSessions = 0;
-                resetCountDown();
-                break;
-        }
-        startPauseToPlayAnimation();
-    }
-
-    private void displayTime(long milliseconds) {
-        String timeToDisplay = getFormattedTime(milliseconds);
-        clock.setText(timeToDisplay);
-    }
-
-    private String getFormattedTime(long milliseconds) {
-        clockFormatter = new ClockFormatter(milliseconds);
-        return clockFormatter.time;
-    }
-
-    private void setUpProgressBar(long milliseconds) {
-       int max = 0;
-        switch (session){
-            case "work":
-                max = (int) sessionPreferences.workTime;
-                break;
-            case "break":
-                max = (int) sessionPreferences.breakTime;
-                break;
-            case "long break":
-                max = (int) sessionPreferences.longBreakTime;
-                break;
-        }
-
-        int progress = (int) milliseconds;
-        progressBar.setVisibility(View.VISIBLE);
-        progressBar.setMax(max);
-        progressBar.setProgress(progress);
-
-    }
-
-
-    /*private void refillProgressBar() {
-
-        progressBar.setMax(100);
-        for (int i = 0; i < progressBar.getMax() ; i++) {
-            progressBar.setProgress(i);
-            try {
-                Thread.sleep(100);
-            }catch (Exception e){
-
-            }
-
-        }
-    }*/
 
     public void showPopup(View v) {
         PopupMenu popup = new PopupMenu(this, v);
@@ -349,10 +161,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setTimePreferences() {
-        sessionPreferences.setWorkTime(workTime);
-        sessionPreferences.setBreakTime(breakTime);
-        sessionPreferences.setLongBreakTime(longBreakTime);
+        sessionPreferences.setWorkMilliseconds(workTime);
+        sessionPreferences.setBreakMilliseconds(breakTime);
+        sessionPreferences.setLongBreakMilliseconds(longBreakTime);
         sessionPreferences.setWorkSessionsBeforeLongBreak(workSessionsBeforeLongBreak);
+    }
+
+    public void setClockDisplayer(){
+        clockDisplayer.setCompletedSessionsDisplayer(sessionCounter);
+        clockDisplayer.setProgressBar(progressBar);
+        clockDisplayer.setTimeDisplayer(displayer);
+        clockDisplayer.setButton(floatingButton);
+        clockDisplayer.setOrderDisplayer(orderDisplayer);
     }
 
     public void notifyEndOf(String session) {

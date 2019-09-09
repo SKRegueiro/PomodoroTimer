@@ -1,7 +1,5 @@
 package com.example.pomodorotimer;
 
-import java.lang.reflect.Array;
-
 public class Status {
     private boolean playing;
     private boolean paused;
@@ -13,20 +11,20 @@ public class Status {
         setToWork();
     }
 
-    public String getCurrentSession(){
-        return session;
-    }
-
     public void setToWork(){
-        this.session = "work";
+        this.session = "WORK";
     }
 
     public void setToBreak(){
-        this.session = "break";
+        this.session = "BREAK";
     }
 
     public void setToLongBreak(){
-        this.session = "long break";
+        this.session = "LONG BREAK";
+    }
+
+    public String getCurrentSession(){
+        return session;
     }
 
     public void play() {
@@ -58,5 +56,4 @@ public class Status {
     public boolean isStopped() {
         return stopped;
     }
-
 }
