@@ -45,9 +45,6 @@ public class Clock {
         this.timer = new CountDownTimer(sessionTime, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                //Hay que encontrar una forma mejor de hacer esto, mucha dependencia
-                //MainActivity.displayer.setText(countdown);
-                //textView.setText(countdown);
                 displayTime(millisUntilFinished);
                 displayProgress(millisUntilFinished);
                 displayCompletedSessions();
@@ -68,7 +65,7 @@ public class Clock {
                 finishWorkSession();
                 break;
             case "BREAK":
-                status.setToWork();
+                finishBreakSession();
                 break;
             case "LONG BREAK":
                 finishLongBreakSession();
@@ -76,34 +73,63 @@ public class Clock {
         }
     }
 
+    public void resetCountdown() {
+
+        stopCountdown();
+        resetSessionValues();
+        updateSessionInfomation(sessionPreferences.workMilliseconds);
+    }
+
     public void stopCountdown() {
-        timer.cancel();
+
+        if (timer != null){timer.cancel();}
+    }
+
+    public void resetSessionValues() {
+        completedSessions = 0;
+        status.setToWork();
     }
 
     public void resumeCountdown() {
-        if(status.isPaused()){
         status.play();
         startSession(millisecondsRemaining);
     }
-    }
+
 
     public void refillProgress() {
         clockDisplayer.refillProgress();
     }
 
     private void finishWorkSession() {
+        clockDisplayer.notifyEndOf(status.getCurrentSession());
         completedSessions++;
         if (completedSessions == sessionPreferences.workSessionsBeforeLongBreak) {
             status.setToLongBreak();
+            updateSessionInfomation(sessionPreferences.longBreakMilliseconds);
         } else {
             status.setToBreak();
+            updateSessionInfomation(sessionPreferences.breakMilliseconds);
         }
     }
 
-    private void finishLongBreakSession() {
-        completedSessions = 0;
+    private void finishBreakSession(){
+        clockDisplayer.notifyEndOf(status.getCurrentSession());
+        updateSessionInfomation(sessionPreferences.workMilliseconds);
         status.setToWork();
     }
+    private void finishLongBreakSession() {
+        clockDisplayer.notifyEndOf(status.getCurrentSession());
+        resetSessionValues();
+        updateSessionInfomation(sessionPreferences.workMilliseconds);
+    }
+
+    private void updateSessionInfomation(long nextSessionMillisecons){
+        displayCompletedSessions();
+        displayOrder(status.getCurrentSession());
+        displayTime(nextSessionMillisecons);
+        clockDisplayer.startPauseToPlayAnimation();
+    }
+
 
     public void displayCompletedSessions() {
         formatter = new ClockFormatter(completedSessions);

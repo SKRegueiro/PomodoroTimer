@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.AnimatedVectorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     final Handler handler = new Handler();
 
     private NotificationManagerCompat notificationManagerCompat;
-    private TextView displayer;
+    public TextView displayer;
     private TextView orderDisplayer;
     private TextView sessionCounter;
     private SessionPreferences sessionPreferences;
@@ -40,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private ClockManager clockManager;
     private ClockDisplayer clockDisplayer;
     private Status status;
+    private ClockFormatter formatter;
 
     private int workTime;
     private int breakTime;
@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         floatingButton = findViewById(R.id.floatingActionButton);
         displayer = findViewById(R.id.timerDisplay);
         progressBar = findViewById(R.id.progressBar);
@@ -63,47 +62,38 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences = this.getSharedPreferences("com.example.pomodorotimer", Context.MODE_PRIVATE);
         workSessionsBeforeLongBreak = 4;
         status = new Status();
+
         notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
         getSavedTimePreferences();
         setTimePreferences();
         setStopLongClickListener();
-        clockDisplayer = new ClockDisplayer();
+        clockDisplayer = new ClockDisplayer(getIntent(), getApplicationContext());
+
         clock = new Clock(sessionPreferences, clockDisplayer);
         clock.setStatus(status);
         setClockDisplayer();
         clockManager = new ClockManager(status, clock);
+        formatter = new ClockFormatter(sessionPreferences.workMilliseconds);
+        clockDisplayer.setOrder(status.getCurrentSession());
+        clockDisplayer.setTime(formatter.time);
     }
 
     public void manageCountDown(View view) {
         clockManager.manageClock();
 
         if (status.isPlaying()) {
-            startPlayToPauseAnimation();
+            clockDisplayer.startPlayToPauseAnimation();
         } else {
-            startPauseToPlayAnimation();
+            clockDisplayer.startPauseToPlayAnimation();
         }
-
-    }
-    private void startPlayToPauseAnimation() {
-        floatingButton.setImageResource(R.drawable.play_to_pause);
-        AnimatedVectorDrawable animation = (AnimatedVectorDrawable) floatingButton.getDrawable();
-        animation.start();
-    }
-
-    private void startPauseToPlayAnimation() {
-        floatingButton.setImageResource(R.drawable.pause_to_play);
-        AnimatedVectorDrawable animation = (AnimatedVectorDrawable) floatingButton.getDrawable();
-        animation.start();
     }
 
     private void setStopLongClickListener() {
         floatingButton.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                //resetCountDown();
-                clockManager.stopClock();
-                clockDisplayer.refillProgress();
-                floatingButton.setImageResource(R.drawable.ic_stop_black_24dp);
+                resetClockValues();
+                floatingButton.setImageResource(R.drawable.ic_stop);
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -148,9 +138,14 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 getSavedTimePreferences();
                 setTimePreferences();
-                resetCountDown();
+                resetClockValues();
             }
         }
+    }
+
+    public void resetClockValues(){
+        clockManager.stopClock();
+        clockDisplayer.refillProgress();
     }
 
     public void getSavedTimePreferences() {
@@ -175,24 +170,5 @@ public class MainActivity extends AppCompatActivity {
         clockDisplayer.setOrderDisplayer(orderDisplayer);
     }
 
-    public void notifyEndOf(String session) {
-        Intent resultIntent = getIntent();
-        resultIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        resultIntent.setAction(Intent.ACTION_MAIN);
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
-                resultIntent, 0);
-        Uri notificationSound = Uri.parse("android.resource://com.example.pomodorotimer/" + R.raw.light);
-        Notification notification = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_1_ID)
-                .setSmallIcon(R.drawable.ic_alarm_on_black_24dp)
-                .setContentTitle("Time's up!")
-                .setContentText("Your " + session + " session has ended")
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setSound(notificationSound)
-                .setContentIntent(pendingIntent)
-                .build();
-        notification.sound = Uri.parse("android.resource://com.example.pomodorotimer/" + R.raw.light);
-        notificationManagerCompat.notify(1, notification);
-    }
 }
 

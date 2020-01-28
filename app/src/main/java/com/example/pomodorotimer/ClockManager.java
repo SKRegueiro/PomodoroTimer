@@ -59,7 +59,7 @@ public class ClockManager {
 
     public void stopClock() {
         status.stop();
-        clock.stopCountdown();
+        clock.resetCountdown();
     }
 
 }
